@@ -107,4 +107,7 @@ create_project_organization <-
       recursive = TRUE
     )
 
+    download.file(url = "https://jaspershen.github.io/file/demo_summary.pptx",
+                  destfile = file.path(current_wd, "5-summary/demo_summary.pptx"))
+
   }

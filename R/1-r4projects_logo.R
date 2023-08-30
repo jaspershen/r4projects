@@ -2,7 +2,7 @@
 #' @description Get the detailed of metPath package.
 #' @author Xiaotao Shen
 #' \email{shenxt1990@@outlook.com}
-#' @importFrom utils packageDescription head tail
+#' @importFrom utils packageDescription head tail download.file
 #' @importFrom cli rule symbol
 #' @importFrom crayon green blue col_align
 #' @importFrom crayon red black white style make_style num_colors
