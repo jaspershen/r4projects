@@ -29,7 +29,9 @@ Imports:
     ggplot2,
     purrr,
     rvest,
-    tibble
+    tibble,
+    dplyr,
+    readr
 Suggests: 
     knitr,
     rmarkdown,

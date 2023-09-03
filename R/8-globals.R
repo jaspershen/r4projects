@@ -10,6 +10,8 @@ utils::globalVariables(
     "sample_id",
     "value",
     ".",
-    "name"
+    "name",
+    "file_name",
+    "package"
   )
 )
