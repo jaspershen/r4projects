@@ -25,7 +25,11 @@ Imports:
     stringr,
     crayon,
     cli,
-    utils
+    utils,
+    ggplot2,
+    purrr,
+    rvest,
+    tibble
 Suggests: 
     knitr,
     rmarkdown,

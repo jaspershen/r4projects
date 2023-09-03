@@ -4,15 +4,63 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>/LICENSE.html</loc>
+  </url>
+  <url>
     <loc>/authors.html</loc>
   </url>
   <url>
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/news/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_project_organization.html</loc>
+  </url>
+  <url>
+    <loc>/reference/draw_citation_history.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_os.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_project_wd.html</loc>
+  </url>
+  <url>
     <loc>/reference/hello.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/install_fastgit.html</loc>
+  </url>
+  <url>
+    <loc>/reference/openwd.html</loc>
+  </url>
+  <url>
+    <loc>/reference/r4projects_logo.html</loc>
+  </url>
+  <url>
+    <loc>/reference/r4projects_packages.html</loc>
+  </url>
+  <url>
+    <loc>/reference/request_citation.html</loc>
+  </url>
+  <url>
+    <loc>/reference/request_coauthors.html</loc>
+  </url>
+  <url>
+    <loc>/reference/request_profile.html</loc>
+  </url>
+  <url>
+    <loc>/reference/request_publications.html</loc>
+  </url>
+  <url>
+    <loc>/reference/show_progresser.html</loc>
   </url>
 </urlset>
