@@ -61,7 +61,15 @@ update_packages_tidymass_org <-
           )
         }
       })
-
     readr::write_csv(file, file = file.path(path_tidymass.org, "file.csv"))
-
   }
+
+
+# generate_publication4wowchemy <-
+#   function(path = ".",
+#            pmid = "37468756",
+#            featured = "false",
+#            publication_types = c("1", "2", "3")) {
+#     publication_info <-
+#       request_pubmed_publication_info(pmid = pmid)
+#   }
