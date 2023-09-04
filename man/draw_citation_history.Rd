@@ -4,10 +4,15 @@
 \alias{draw_citation_history}
 \title{draw_citation_history}
 \usage{
-draw_citation_history(user_id = "3TK9yz8AAAAJ")
+draw_citation_history(user_id = "3TK9yz8AAAAJ", force = FALSE, interval = 7)
 }
 \arguments{
 \item{user_id}{User google scholar ID}
+
+\item{force}{Force read webpage?}
+
+\item{interval}{If there is old data on the local machine,
+do you want to use it and the interval (day)?}
 }
 \value{
 Profile.

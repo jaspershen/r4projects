@@ -31,7 +31,8 @@ Imports:
     rvest,
     tibble,
     dplyr,
-    readr
+    readr,
+    xml2
 Suggests: 
     knitr,
     rmarkdown,

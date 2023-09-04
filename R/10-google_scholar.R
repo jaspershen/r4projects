@@ -1,48 +1,208 @@
+#' @title craw_or_load_page
+#' @description Craw or load webpage data.
+#' @author Xiaotao Shen
+#' \email{shenxt1990@@outlook.com}
+#' @param user_id User google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
+#' @importFrom magrittr %>%
+#' @importFrom rvest read_html html_node html_text html_text2 html_elements
+#' @importFrom rvest html_element html_attr html_table html_nodes
+#' @importFrom tibble as_tibble
+#' @importFrom xml2 read_html write_html
+#' @return page data
+#' @export
+
+craw_or_load_page <-
+  function(user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7) {
+    url <-
+      paste0(
+        "https://scholar.google.com/citations?user=",
+        user_id,
+        "&cstart=0&pagesize=100"
+      )
+
+    package_path <-
+      system.file(package = "r4projects")
+
+    user_path <-
+      file.path(package_path, paste0("cache/", user_id))
+
+    dir.create(user_path,
+               showWarnings = FALSE,
+               recursive = TRUE)
+
+    if (force) {
+      page_data <-
+        rvest::read_html(x = url)
+      xml2::write_html(page_data, file = paste0(user_path, "/page_data.html"))
+    } else{
+      if (any(dir(user_path) == "page_data.html")) {
+        file_info <- file.info(file.path(user_path, "page_data.html"))
+        diff_time <-
+          difftime(Sys.time(), file_info$ctime, units = "days") %>%
+          as.numeric()
+        if (diff_time >= interval) {
+          unlink(file.path(user_path, "page_data.html"))
+        }
+      }
+
+      if (any(dir(user_path) == "page_data.html")) {
+        page_data <-
+          xml2::read_html(paste0(user_path, "/page_data.html"))
+        message(
+          "Use previouse webpage data less than ",
+          interval,
+          " days, if you want to use latest data, set force as TRUE"
+        )
+      } else{
+        page_data <-
+          rvest::read_html(x = url)
+        xml2::write_html(page_data, file = paste0(user_path, "/page_data.html"))
+      }
+    }
+    page_data
+  }
+
+
+#' @title craw_or_load_publication
+#' @description Craw or load webpage data of one publication.
+#' @author Xiaotao Shen
+#' \email{shenxt1990@@outlook.com}
+#' @param user_id User google scholar ID
+#' @param pub_id publication ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
+#' @importFrom magrittr %>%
+#' @importFrom rvest read_html html_node html_text html_text2 html_elements
+#' @importFrom rvest html_element html_attr html_table html_nodes
+#' @importFrom tibble as_tibble
+#' @importFrom xml2 read_html write_html
+#' @return page data
+#' @export
+
+craw_or_load_publication <-
+  function(user_id = "3TK9yz8AAAAJ",
+           pub_id = "2osOgNQ5qMEC",
+           force = FALSE,
+           interval = 7) {
+    pub_url <-
+      paste0(
+        "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=",
+        user_id,
+        "&citation_for_view=3TK9yz8AAAAJ:",
+        pub_id
+      )
+
+    package_path <-
+      system.file(package = "r4projects")
+
+    user_path <-
+      file.path(package_path, paste0("cache/", user_id))
+
+    pub_path <- file.path(user_path, pub_id)
+
+    dir.create(pub_path,
+               showWarnings = FALSE,
+               recursive = TRUE)
+
+
+    if (force) {
+      pub_data <-
+        rvest::read_html(x = pub_url)
+      xml2::write_html(pub_data, file = paste0(pub_path, "/pub_data.html"))
+    } else{
+      if (any(dir(pub_path) == "pub_data.html")) {
+        file_info <- file.info(file.path(pub_path, "pub_data.html"))
+        diff_time <-
+          difftime(Sys.time(), file_info$ctime, units = "days") %>%
+          as.numeric()
+        if (diff_time >= interval) {
+          unlink(file.path(pub_path, "pub_data.html"))
+        }
+      }
+
+      if (any(dir(pub_path) == "pub_data.html")) {
+        pub_data <-
+          xml2::read_html(paste0(pub_path, "/pub_data.html"))
+        message(
+          "Use previouse webpage data less than ",
+          interval,
+          " days, if you want to use latest data, set force as TRUE"
+        )
+      } else{
+        pub_data <-
+          rvest::read_html(x = pub_url)
+        xml2::write_html(pub_data, file = paste0(pub_path, "/pub_data.html"))
+      }
+    }
+
+    pub_data
+  }
+
+
 #' @title request_profile
 #' @description Request the profile.
 #' @author Xiaotao Shen
 #' \email{shenxt1990@@outlook.com}
 #' @param user_id User google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
 #' @importFrom magrittr %>%
 #' @importFrom rvest read_html html_node html_text html_text2 html_elements
 #' @importFrom rvest html_element html_attr html_table html_nodes
 #' @importFrom tibble as_tibble
+#' @importFrom xml2 read_html write_html
 #' @return Profile.
 #' @export
 
 request_profile <-
-  function(user_id = "3TK9yz8AAAAJ") {
-    url <- paste0("https://scholar.google.com/citations?user=", user_id)
+  function(user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7) {
+    url <-
+      paste0(
+        "https://scholar.google.com/citations?user=",
+        user_id,
+        "&cstart=0&pagesize=100"
+      )
 
-    data <-
-      rvest::read_html(x = url)
+    page_data <-
+      craw_or_load_page(user_id = user_id,
+                        force = force,
+                        interval = interval)
 
     user_name <-
-      data %>%
+      page_data %>%
       rvest::html_node("#gsc_prf_in") %>%
       rvest::html_text()
 
     affiliation <-
-      data %>%
+      page_data %>%
       rvest::html_node(".gsc_prf_il") %>%
       rvest::html_text()
 
     homepage <-
-      data %>%
+      page_data %>%
       rvest::html_node("#gsc_prf_ivh") %>%
-      html_elements("a") %>%
-      html_attr("href")
+      rvest::html_elements("a") %>%
+      rvest::html_attr("href")
 
     areas_of_interest <-
-      data %>%
+      page_data %>%
       rvest::html_node("#gsc_prf_int") %>%
-      html_elements("a") %>%
+      rvest::html_elements("a") %>%
       rvest::html_text()
 
     other_names <-
-      data %>%
+      page_data %>%
       rvest::html_node("#gsc_prf_ion") %>%
-      html_elements("span") %>%
+      rvest::html_elements("span") %>%
       rvest::html_text()
 
     other_names <-
@@ -65,32 +225,44 @@ request_profile <-
 #' @author Xiaotao Shen
 #' \email{shenxt1990@@outlook.com}
 #' @param user_id User google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
 #' @importFrom magrittr %>%
 #' @importFrom rvest read_html html_node html_text html_text2 html_elements
 #' @importFrom rvest html_element html_attr html_table
 #' @return Profile.
 #' @export
 request_citation <-
-  function(user_id = "3TK9yz8AAAAJ") {
-    url <- paste0("https://scholar.google.com/citations?user=", user_id)
+  function(user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7) {
+    url <-
+      paste0(
+        "https://scholar.google.com/citations?user=",
+        user_id,
+        "&cstart=0&pagesize=100"
+      )
 
-    data <-
-      rvest::read_html(x = url)
+    page_data <-
+      craw_or_load_page(user_id = user_id,
+                        force = force,
+                        interval = interval)
 
     citation_summary <-
-      data %>%
+      page_data %>%
       rvest::html_node("#gsc_rsb_st") %>%
       html_table() %>%
       as.data.frame()
 
     year <-
-      data %>%
+      page_data %>%
       html_nodes(".gsc_g_t") %>%
       html_text() %>%
       as.numeric()
 
     citation <-
-      data %>%
+      page_data %>%
       html_nodes(".gsc_g_a") %>%
       html_text() %>%
       as.numeric()
@@ -109,26 +281,38 @@ request_citation <-
 #' @author Xiaotao Shen
 #' \email{shenxt1990@@outlook.com}
 #' @param user_id User google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
 #' @importFrom magrittr %>%
 #' @importFrom ggplot2 ggplot aes geom_bar theme_bw labs
 #' @return Profile.
 #' @export
 
 draw_citation_history <-
-  function(user_id = "3TK9yz8AAAAJ") {
-    url <- paste0("https://scholar.google.com/citations?user=", user_id)
+  function(user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7) {
+    url <-
+      paste0(
+        "https://scholar.google.com/citations?user=",
+        user_id,
+        "&cstart=0&pagesize=100"
+      )
 
-    data <-
-      rvest::read_html(x = url)
+    page_data <-
+      craw_or_load_page(user_id = user_id,
+                        force = force,
+                        interval = interval)
 
     year <-
-      data %>%
+      page_data %>%
       html_nodes(".gsc_g_t") %>%
       html_text() %>%
       as.numeric()
 
     citation <-
-      data %>%
+      page_data %>%
       html_nodes(".gsc_g_a") %>%
       html_text() %>%
       as.numeric()
@@ -152,25 +336,37 @@ draw_citation_history <-
 #' @author Xiaotao Shen
 #' \email{shenxt1990@@outlook.com}
 #' @param user_id User google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
 #' @importFrom magrittr %>%
 #' @importFrom stringr str_extract str_replace str_detect
 #' @return Information of coauthors
 #' @export
 request_coauthors <-
-  function(user_id = "3TK9yz8AAAAJ") {
-    url <- paste0("https://scholar.google.com/citations?user=", user_id)
+  function(user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7) {
+    url <-
+      paste0(
+        "https://scholar.google.com/citations?user=",
+        user_id,
+        "&cstart=0&pagesize=100"
+      )
 
-    data <-
-      rvest::read_html(x = url)
+    page_data <-
+      craw_or_load_page(user_id = user_id,
+                        force = force,
+                        interval = interval)
 
     coauthor_names <-
-      data %>%
+      page_data %>%
       rvest::html_nodes(".gsc_rsb_a_desc") %>%
       html_nodes("a") %>%
       html_text()
 
     coauthor_user_ids <-
-      data %>%
+      page_data %>%
       rvest::html_nodes(".gsc_rsb_a_desc") %>%
       rvest::html_nodes("a") %>%
       rvest::html_attr(name = "href") %>%
@@ -179,7 +375,7 @@ request_coauthors <-
       stringr::str_replace("\\&", "")
 
     coauthor_affliations <-
-      data %>%
+      page_data %>%
       rvest::html_nodes(".gsc_rsb_a_ext") %>%
       rvest::html_text()
 
@@ -189,7 +385,8 @@ request_coauthors <-
 
     data.frame(names = coauthor_names,
                user_ids = coauthor_user_ids,
-               affliations = coauthor_affliations)
+               affliations = coauthor_affliations) %>%
+      tibble::as_tibble()
 
   }
 
@@ -199,6 +396,9 @@ request_coauthors <-
 #' @author Xiaotao Shen
 #' \email{shenxt1990@@outlook.com}
 #' @param user_id User google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
 #' @importFrom magrittr %>%
 #' @importFrom stringr str_extract str_replace str_detect
 #' @importFrom purrr map
@@ -206,7 +406,9 @@ request_coauthors <-
 #' @export
 
 request_publications <-
-  function(user_id = "3TK9yz8AAAAJ") {
+  function(user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7) {
     url <-
       paste0(
         "https://scholar.google.com/citations?user=",
@@ -214,10 +416,12 @@ request_publications <-
         "&cstart=0&pagesize=100"
       )
 
-    data <-
-      rvest::read_html(x = url)
+    page_data <-
+      craw_or_load_page(user_id = user_id,
+                        force = force,
+                        interval = interval)
 
-    publications <- data %>%
+    publications <- page_data %>%
       html_nodes(".gsc_a_tr")
 
     publication_id <- publications %>%
@@ -237,7 +441,9 @@ request_publications <-
             id
           )
         page <-
-          rvest::read_html(x = pub_url)
+          craw_or_load_publication(pub_id = id,
+                                   force = force,
+                                   interval = interval)
 
         publication_title <-
           page %>%
