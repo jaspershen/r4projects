@@ -65,11 +65,170 @@ update_packages_tidymass_org <-
   }
 
 
-# generate_publication4wowchemy <-
-#   function(path = ".",
-#            pmid = "37468756",
-#            featured = "false",
-#            publication_types = c("1", "2", "3")) {
-#     publication_info <-
-#       request_pubmed_publication_info(pmid = pmid)
-#   }
+generate_publication4wowchemy <-
+  function(path = ".",
+           user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7,
+           admin = "Xiaotao Shen",
+           featured = "false",
+           publication_types = c("1", "2", "3")) {
+    publication_types <- match.arg(publication_types)
+    publications <-
+      request_publications(user_id = user_id,
+                           force = force,
+                           interval = interval)
+
+    seq_len(nrow(publications)) %>%
+      purrr::walk(function(i) {
+        cat(i, " ")
+        pub_path <-
+          file.path(path, publications$publication_title[i])
+        dir.create(pub_path,
+                   recursive = TRUE,
+                   showWarnings = FALSE)
+
+        file <-
+          file.path(pub_path, "index.txt")
+
+        writeLines("---", file)
+
+        if (is.na(publications$publication_title[i])) {
+          publication_title <- ""
+        } else{
+          publication_title <-
+            publications$publication_title[i]
+        }
+        write(paste0("title: ", publication_title),
+              file,
+              append = TRUE)
+        write("", file, append = TRUE)
+
+
+        if (is.na(publications$Abstract[i])) {
+          Abstract <- ""
+        } else{
+          Abstract <-
+            publications$Abstract[i]
+        }
+        write(paste0("abstract: ", Abstract),
+              file,
+              append = TRUE)
+
+        write("", file, append = TRUE)
+
+        write("authors:", file, append = TRUE)
+
+        if (is.na(publications$Authors[i])) {
+          Authors <- ""
+        } else{
+          Authors <-
+            publications$Authors[i]
+        }
+
+        if (Authors == "") {
+          write(paste0("- ", "admin"),
+                file,
+                append = TRUE)
+        } else{
+          publications$Authors[i] %>%
+            stringr::str_split(",") %>%
+            `[[`(1) %>%
+            stringr::str_trim(side = "both") %>%
+            lapply(function(author) {
+              if (author == admin) {
+                author <- "admin"
+              }
+              write(paste0("- ", author),
+                    file,
+                    append = TRUE)
+            })
+        }
+
+        write("", file, append = TRUE)
+        write(paste0("featured: ", featured),
+              file,
+              append = TRUE)
+
+        if (is.na(publications$Journal[i])) {
+          Journal <- ""
+        } else{
+          Journal <-
+            publications$Journal[i]
+        }
+
+        write(paste0("publication: ", Journal),
+              file,
+              append = TRUE)
+
+        write("publication_types:",
+              file,
+              append = TRUE)
+
+        write(paste0("- ", publication_types),
+              file,
+              append = TRUE)
+
+        publishDate <-
+          publications$Publication_date[i]
+
+        if (is.na(publishDate)) {
+          publishDate <-
+            as.character(Sys.Date())
+        } else{
+          publishDate <-
+            tryCatch(as.character(as.Date(publishDate)), error = function(e){
+              return(as.character(Sys.Date()))
+            })
+        }
+
+        write(paste0("publishDate: ", publishDate),
+              file,
+              append = TRUE)
+
+        write(paste0("summary: ", Abstract),
+              file,
+              append = TRUE)
+
+        write("links:",
+              file,
+              append = TRUE)
+        write("- icon: link",
+              file,
+              append = TRUE)
+        write("  icon_pack: fas",
+              file,
+              append = TRUE)
+        write("  name: Link",
+              file,
+              append = TRUE)
+
+        if (is.na(publications$publication_link[i])) {
+          publication_link <- ""
+        } else{
+          publication_link <-
+            publications$publication_link[i]
+        }
+
+        write(paste0("  url: ", publication_link),
+              file,
+              append = TRUE)
+        write("- icon: file-pdf",
+              file,
+              append = TRUE)
+        write("  icon_pack: fas",
+              file,
+              append = TRUE)
+        write("  name: PDF",
+              file,
+              append = TRUE)
+        write(paste0("  url: "),
+              file,
+              append = TRUE)
+        write("---",
+              file,
+              append = TRUE)
+        file.rename(file, file.path(pub_path, "index.md"))
+      })
+
+  }

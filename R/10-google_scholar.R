@@ -20,9 +20,9 @@ craw_or_load_page <-
            interval = 7) {
     url <-
       paste0(
-        "https://scholar.google.com/citations?user=",
+        "https://scholar.google.com/citations?hl=en&user=",
         user_id,
-        "&cstart=0&pagesize=100"
+        "&pagesize=80&view_op=list_works&sortby=pubdate"
       )
 
     package_path <-
@@ -36,6 +36,7 @@ craw_or_load_page <-
                recursive = TRUE)
 
     if (force) {
+      Sys.sleep(time = 3)
       page_data <-
         rvest::read_html(x = url)
       xml2::write_html(page_data, file = paste0(user_path, "/page_data.html"))
@@ -53,12 +54,14 @@ craw_or_load_page <-
       if (any(dir(user_path) == "page_data.html")) {
         page_data <-
           xml2::read_html(paste0(user_path, "/page_data.html"))
+        message("Previouse webpage data is in ", user_path)
         message(
           "Use previouse webpage data less than ",
           interval,
           " days, if you want to use latest data, set force as TRUE"
         )
       } else{
+        Sys.sleep(time = 3)
         page_data <-
           rvest::read_html(x = url)
         xml2::write_html(page_data, file = paste0(user_path, "/page_data.html"))
@@ -94,7 +97,9 @@ craw_or_load_publication <-
       paste0(
         "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=",
         user_id,
-        "&citation_for_view=3TK9yz8AAAAJ:",
+        "&pagesize=80&sortby=pubdate&citation_for_view=",
+        user_id,
+        ":",
         pub_id
       )
 
@@ -112,6 +117,7 @@ craw_or_load_publication <-
 
 
     if (force) {
+      Sys.sleep(time = 3)
       pub_data <-
         rvest::read_html(x = pub_url)
       xml2::write_html(pub_data, file = paste0(pub_path, "/pub_data.html"))
@@ -129,12 +135,14 @@ craw_or_load_publication <-
       if (any(dir(pub_path) == "pub_data.html")) {
         pub_data <-
           xml2::read_html(paste0(pub_path, "/pub_data.html"))
+        message("Previouse webpage data is in ", user_path)
         message(
           "Use previouse webpage data less than ",
           interval,
           " days, if you want to use latest data, set force as TRUE"
         )
       } else{
+        Sys.sleep(time = 3)
         pub_data <-
           rvest::read_html(x = pub_url)
         xml2::write_html(pub_data, file = paste0(pub_path, "/pub_data.html"))
@@ -437,9 +445,12 @@ request_publications <-
           paste0(
             "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=",
             user_id,
-            "&citation_for_view=3TK9yz8AAAAJ:",
+            "&citation_for_view=",
+            user_id,
+            ":",
             id
           )
+
         page <-
           craw_or_load_publication(pub_id = id,
                                    force = force,
@@ -503,7 +514,16 @@ request_publications <-
         if (length(Total_citations) == 0) {
           Total_citations <- NA
         }
+
+        Abstract <-
+          values[labels == "Description"]
+
+        if (length(Abstract) == 0) {
+          Abstract <- NA
+        }
+
         data.frame(
+          publication_id = id,
           publication_title = publication_title,
           publication_link = publication_link,
           Authors = Authors,
@@ -513,7 +533,8 @@ request_publications <-
           Issue = Issue,
           Pages = Pages,
           Publisher = Publisher,
-          Total_citations = Total_citations
+          Total_citations = Total_citations,
+          Abstract = Abstract
         ) %>%
           tibble::as_tibble()
       }) %>%
