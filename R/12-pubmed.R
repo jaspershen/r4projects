@@ -1,3 +1,52 @@
+#' @title convert_gs_pub_id2pmid
+#' @description Convert google scholar publication ID to pubmed ID
+#' @author Xiaotao Shen
+#' \email{shenxt1990@@outlook.com}
+#' @param gs_user_id google scholar user ID
+#' @param gs_pub_id google scholar publication ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
+#' @importFrom magrittr %>%
+#' @importFrom stringr str_extract str_replace str_detect str_split
+#' @importFrom purrr map
+#' @importFrom rentrez entrez_search
+#' @return Information of publication
+#' @export
+
+convert_gs_pub_id2pmid <-
+  function(gs_user_id = "3TK9yz8AAAAJ",
+           gs_pub_id = "0EnyYjriUFMC",
+           force = FALSE,
+           interval = 7) {
+    result <-
+      request_publication_info(
+        user_id = gs_user_id,
+        pub_id = gs_pub_id,
+        force = force,
+        interval = interval
+      )
+
+    if (!is.na(result$publication_title)) {
+      result <-
+        rentrez::entrez_search(db = "pubmed", term = result$publication_title)
+
+      if (result$count > 0) {
+        # Retrieve the first PubMed ID (PMID)
+        pmid <- result$ids[1]
+        return(pmid)
+      } else {
+        warning("PubMed ID not found")
+        return(NA)
+      }
+    } else{
+      warning("Publication not found on Google Scholar")
+      return(NA)
+    }
+  }
+
+
+
 #' @title request_pubmed_publication_info
 #' @description Request publication information from pubmed
 #' @author Xiaotao Shen
@@ -22,7 +71,6 @@ request_pubmed_publication_info <-
       data %>%
       html_nodes("#full-view-journal-trigger") %>%
       html_text2()
-
 
     article_source <-
       data %>%
@@ -51,14 +99,29 @@ request_pubmed_publication_info <-
       html_text2() %>%
       stringr::str_split(pattern = "\\\n")
 
-    if(length(affiliations) == 0){
+    if (length(affiliations) == 0) {
       affiliations <- NA
-    }else{
+    } else{
       affiliations <-
         affiliations[[1]]
 
       affiliations <-
-        affiliations[affiliations != "Affiliations"]
+        affiliations[!stringr::str_detect(affiliations, "Affiliation")]
+      affiliations <-
+        affiliations[!stringr::str_detect(affiliations, "Contributed")]
+      affiliations <-
+        affiliations[!stringr::str_detect(affiliations, "equally")]
+
+      affiliations <-
+        affiliations %>%
+        stringr::str_replace("^[0-9]{1,3}", "") %>%
+        stringr::str_replace("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b", "") %>%
+        stringr::str_replace("Electronic address", "") %>%
+        stringr::str_replace_all("\\.", "") %>%
+        stringr::str_replace_all("\\:", "") %>%
+        stringr::str_replace_all("\\;", ",") %>%
+        stringr::str_trim(side = "both")
+
     }
 
     identifiers <-

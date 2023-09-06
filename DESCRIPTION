@@ -32,7 +32,8 @@ Imports:
     tibble,
     dplyr,
     readr,
-    xml2
+    xml2,
+    rentrez
 Suggests: 
     knitr,
     rmarkdown,

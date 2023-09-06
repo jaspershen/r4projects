@@ -387,13 +387,19 @@ request_coauthors <-
       rvest::html_nodes(".gsc_rsb_a_ext") %>%
       rvest::html_text()
 
+    coauthor_location <-
+      coauthor_affliations[stringr::str_detect(coauthor_affliations, "Verified")] %>%
+      stringr::str_replace("Verified email at ", "")
+
     coauthor_affliations <-
       coauthor_affliations[!stringr::str_detect(coauthor_affliations, "Verified")]
 
-
-    data.frame(names = coauthor_names,
-               user_ids = coauthor_user_ids,
-               affliations = coauthor_affliations) %>%
+    data.frame(
+      names = coauthor_names,
+      user_ids = coauthor_user_ids,
+      affliations = coauthor_affliations,
+      location = coauthor_location
+    ) %>%
       tibble::as_tibble()
 
   }
@@ -452,9 +458,12 @@ request_publications <-
           )
 
         page <-
-          craw_or_load_publication(pub_id = id,
-                                   force = force,
-                                   interval = interval)
+          craw_or_load_publication(
+            user_id = user_id,
+            pub_id = id,
+            force = force,
+            interval = interval
+          )
 
         publication_title <-
           page %>%
@@ -539,5 +548,130 @@ request_publications <-
           tibble::as_tibble()
       }) %>%
       do.call(rbind, .) %>%
+      tibble::as_tibble()
+  }
+
+
+
+
+
+#' @title request_publication_info
+#' @description Request one publication info
+#' @author Xiaotao Shen
+#' \email{shenxt1990@@outlook.com}
+#' @param user_id User google scholar ID
+#' @param pub_id Publication google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
+#' @importFrom magrittr %>%
+#' @importFrom stringr str_extract str_replace str_detect
+#' @importFrom purrr map
+#' @return Information of publications
+#' @export
+
+request_publication_info <-
+  function(user_id = "3TK9yz8AAAAJ",
+           pub_id = "0EnyYjriUFMC",
+           force = FALSE,
+           interval = 7) {
+    pub_url <-
+      paste0(
+        "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=",
+        user_id,
+        "&citation_for_view=",
+        user_id,
+        ":",
+        pub_id
+      )
+
+    page <-
+      craw_or_load_publication(
+        user_id = user_id,
+        pub_id = pub_id,
+        force = force,
+        interval = interval
+      )
+
+    publication_title <-
+      page %>%
+      html_node("#gsc_oci_title") %>%
+      html_text()
+
+    publication_link <-
+      page %>%
+      html_node("#gsc_oci_title") %>%
+      html_node("a") %>%
+      html_attr("href")
+
+    labels <-
+      page %>%
+      html_nodes(".gs_scl") %>%
+      html_nodes("div.gsc_oci_field") %>%
+      html_text2()
+
+    values <-
+      page %>%
+      html_nodes(".gs_scl") %>%
+      html_nodes("div.gsc_oci_value") %>%
+      html_text2()
+
+    Authors = values[labels == "Authors"]
+    if (length(Authors) == 0) {
+      Authors <- NA
+    }
+    Publication_date = values[labels == "Publication date"]
+    if (length(Publication_date) == 0) {
+      Publication_date <- NA
+    }
+    Journal = values[labels == "Journal"]
+    if (length(Journal) == 0) {
+      Journal <- NA
+    }
+    Volume = values[labels == "Volume"]
+    if (length(Volume) == 0) {
+      Volume <- NA
+    }
+    Issue = values[labels == "Issue"]
+    if (length(Issue) == 0) {
+      Issue <- NA
+    }
+    Pages = values[labels == "Pages"]
+    if (length(Pages) == 0) {
+      Pages <- NA
+    }
+    Publisher = values[labels == "Publisher"]
+    if (length(Publisher) == 0) {
+      Publisher <- NA
+    }
+    Total_citations = values[labels == "Total citations"] %>%
+      stringr::str_extract("Cited by [0-9]{1,5}") %>%
+      stringr::str_replace("Cited by ", "") %>%
+      as.numeric()
+    if (length(Total_citations) == 0) {
+      Total_citations <- NA
+    }
+
+    Abstract <-
+      values[labels == "Description"]
+
+    if (length(Abstract) == 0) {
+      Abstract <- NA
+    }
+
+    data.frame(
+      publication_id = id,
+      publication_title = publication_title,
+      publication_link = publication_link,
+      Authors = Authors,
+      Publication_date = Publication_date,
+      Journal = Journal,
+      Volume = Volume,
+      Issue = Issue,
+      Pages = Pages,
+      Publisher = Publisher,
+      Total_citations = Total_citations,
+      Abstract = Abstract
+    ) %>%
       tibble::as_tibble()
   }

@@ -12,6 +12,7 @@ utils::globalVariables(
     ".",
     "name",
     "file_name",
-    "package"
+    "package",
+    "id"
   )
 )

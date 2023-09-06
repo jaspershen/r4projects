@@ -177,9 +177,12 @@ generate_publication4wowchemy <-
             as.character(Sys.Date())
         } else{
           publishDate <-
-            tryCatch(as.character(as.Date(publishDate)), error = function(e){
-              return(as.character(Sys.Date()))
-            })
+            tryCatch(
+              as.character(as.Date(publishDate)),
+              error = function(e) {
+                return(as.character(Sys.Date()))
+              }
+            )
         }
 
         write(paste0("publishDate: ", publishDate),
@@ -230,5 +233,168 @@ generate_publication4wowchemy <-
               append = TRUE)
         file.rename(file, file.path(pub_path, "index.md"))
       })
-
   }
+
+
+
+
+# publications <-
+#   request_publications(user_id = "3TK9yz8AAAAJ")
+#
+# all_affiliations <-
+#   publications$publication_id %>%
+#   lapply(function(id) {
+#     cat(id, " ")
+#     pmid <-
+#       convert_gs_pub_id2pmid(
+#         gs_user_id = "3TK9yz8AAAAJ",
+#         gs_pub_id = id,
+#         interval = 7,
+#         force = FALSE
+#       )
+#     if (is.na(pmid)) {
+#       return(NA)
+#     } else{
+#       Sys.sleep(3)
+#       result <-
+#         request_pubmed_publication_info(pmid = pmid)
+#       affiliations <-
+#         result$affiliations
+#       return(affiliations)
+#     }
+#   })
+#
+# all_affiliations <-
+#   unlist(all_affiliations)
+#
+# all_affiliations <-
+#   all_affiliations[!is.na(all_affiliations)]
+#
+#
+# all_affiliations <-
+#   all_affiliations %>%
+#   stringr::str_replace("^[0-9]{1,3}", "") %>%
+#   stringr::str_replace("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b",
+#                        "") %>%
+#   stringr::str_replace("Electronic address", "") %>%
+#   stringr::str_replace_all("\\.", "") %>%
+#   stringr::str_replace_all("\\:", "") %>%
+#   stringr::str_replace_all("\\;", ",") %>%
+#   stringr::str_trim(side = "both")
+#
+# all_affiliations <-
+#   all_affiliations[all_affiliations != ""]
+#
+# all_locations <-
+#   all_affiliations %>%
+#   lapply(function(x) {
+#     # cat(x, "\n")
+#     x <-
+#       stringr::str_split(x, ",")[[1]] %>%
+#       stringr::str_trim(side = "both")
+#
+#     if (length(x) > 3) {
+#       x1 <- tail(x, 3) %>%
+#         paste(collapse = ", ")
+#     } else{
+#       x1 <- x %>%
+#         paste(collapse = ", ")
+#     }
+#
+#     if (length(x) > 2) {
+#       x2 <- tail(x, 2) %>%
+#         paste(collapse = ", ")
+#     } else{
+#       x2 <- x %>%
+#         paste(collapse = ", ")
+#     }
+#
+#     result <-
+#       tryCatch(
+#         tmaptools::geocode_OSM(x1),
+#         error = function(e) {
+#           return(NULL)
+#         }
+#       )
+#
+#     if (is.null(result)) {
+#       result <-
+#         tryCatch(
+#           tmaptools::geocode_OSM(x2),
+#           error = function(e) {
+#             return(NULL)
+#           }
+#         )
+#     }
+#
+#     if (is.null(result)) {
+#       return(NULL)
+#     } else{
+#       return(result$coords)
+#     }
+#   })
+#
+# all_locations <-
+#   all_locations %>%
+#   do.call(rbind, .) %>%
+#   as.data.frame()
+#
+# all_locations$id <-
+#   paste(all_locations$x,
+#         all_locations$y, sep = "_")
+#
+# location_count <-
+#   all_locations %>%
+#   dplyr::count(id)
+#
+# all_locations <-
+#   all_locations %>%
+#   dplyr::distinct(id, .keep_all = TRUE) %>%
+#   dplyr::left_join(location_count, by = "id") %>%
+#   dplyr::arrange(desc(n))
+#
+# ###map to show it
+# library(ggmap)
+# library(mapdata)
+# library(maps)
+# world <- ggplot2::map_data("world")
+#
+# world <- world %>%
+#   dplyr::filter(region != "Antarctica" & region != "Greenland")
+#
+# gg1 <- ggplot(data = world, aes(x = long, y = lat)) +
+#   geom_polygon(aes(group = group),
+#                fill = "#76b5c5") +
+#   theme_bw() +
+#   labs(x = "", y = "") +
+#   theme(
+#     legend.position = "none",
+#     panel.background = element_rect(fill = "transparent", color = NA),
+#     plot.background = element_rect(fill = "transparent", color = NA),
+#     axis.text = element_blank(),
+#     axis.ticks = element_blank()
+#   )
+#
+# gg1 <-
+#   gg1 +
+#   geom_point(
+#     data = all_locations,
+#     aes(x = x, y = y, size = n),
+#     shape = 16,
+#     color = "#873e23"
+#   ) +
+#   scale_size_continuous(range = c(1, 4))
+#
+# plot <-
+#   plotly::ggplotly(p = gg1) %>%
+#   plotly::config(
+#     toImageButtonOptions = list(
+#       format = "png",
+#       filename = "plot",
+#       height = 600,
+#       width = 800,
+#       background = "rgba(0,0,0,0)" # Transparent background
+#     )
+#   )
+#
+# htmlwidgets::saveWidget(plot, "map.html")
