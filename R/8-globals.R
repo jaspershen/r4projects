@@ -13,6 +13,13 @@ utils::globalVariables(
     "name",
     "file_name",
     "package",
-    "id"
+    "id",
+    "n",
+    "region",
+    "long",
+    "lat",
+    "group",
+    "x",
+    "y"
   )
 )

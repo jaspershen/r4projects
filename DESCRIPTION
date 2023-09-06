@@ -33,7 +33,8 @@ Imports:
     dplyr,
     readr,
     xml2,
-    rentrez
+    rentrez,
+    tmaptools
 Suggests: 
     knitr,
     rmarkdown,

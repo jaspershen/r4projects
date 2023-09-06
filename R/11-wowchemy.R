@@ -238,163 +238,202 @@ generate_publication4wowchemy <-
 
 
 
-# publications <-
-#   request_publications(user_id = "3TK9yz8AAAAJ")
-#
-# all_affiliations <-
-#   publications$publication_id %>%
-#   lapply(function(id) {
-#     cat(id, " ")
-#     pmid <-
-#       convert_gs_pub_id2pmid(
-#         gs_user_id = "3TK9yz8AAAAJ",
-#         gs_pub_id = id,
-#         interval = 7,
-#         force = FALSE
-#       )
-#     if (is.na(pmid)) {
-#       return(NA)
-#     } else{
-#       Sys.sleep(3)
-#       result <-
-#         request_pubmed_publication_info(pmid = pmid)
-#       affiliations <-
-#         result$affiliations
-#       return(affiliations)
-#     }
-#   })
-#
-# all_affiliations <-
-#   unlist(all_affiliations)
-#
-# all_affiliations <-
-#   all_affiliations[!is.na(all_affiliations)]
-#
-#
-# all_affiliations <-
-#   all_affiliations %>%
-#   stringr::str_replace("^[0-9]{1,3}", "") %>%
-#   stringr::str_replace("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b",
-#                        "") %>%
-#   stringr::str_replace("Electronic address", "") %>%
-#   stringr::str_replace_all("\\.", "") %>%
-#   stringr::str_replace_all("\\:", "") %>%
-#   stringr::str_replace_all("\\;", ",") %>%
-#   stringr::str_trim(side = "both")
-#
-# all_affiliations <-
-#   all_affiliations[all_affiliations != ""]
-#
-# all_locations <-
-#   all_affiliations %>%
-#   lapply(function(x) {
-#     # cat(x, "\n")
-#     x <-
-#       stringr::str_split(x, ",")[[1]] %>%
-#       stringr::str_trim(side = "both")
-#
-#     if (length(x) > 3) {
-#       x1 <- tail(x, 3) %>%
-#         paste(collapse = ", ")
-#     } else{
-#       x1 <- x %>%
-#         paste(collapse = ", ")
-#     }
-#
-#     if (length(x) > 2) {
-#       x2 <- tail(x, 2) %>%
-#         paste(collapse = ", ")
-#     } else{
-#       x2 <- x %>%
-#         paste(collapse = ", ")
-#     }
-#
-#     result <-
-#       tryCatch(
-#         tmaptools::geocode_OSM(x1),
-#         error = function(e) {
-#           return(NULL)
-#         }
-#       )
-#
-#     if (is.null(result)) {
-#       result <-
-#         tryCatch(
-#           tmaptools::geocode_OSM(x2),
-#           error = function(e) {
-#             return(NULL)
-#           }
-#         )
-#     }
-#
-#     if (is.null(result)) {
-#       return(NULL)
-#     } else{
-#       return(result$coords)
-#     }
-#   })
-#
-# all_locations <-
-#   all_locations %>%
-#   do.call(rbind, .) %>%
-#   as.data.frame()
-#
-# all_locations$id <-
-#   paste(all_locations$x,
-#         all_locations$y, sep = "_")
-#
-# location_count <-
-#   all_locations %>%
-#   dplyr::count(id)
-#
-# all_locations <-
-#   all_locations %>%
-#   dplyr::distinct(id, .keep_all = TRUE) %>%
-#   dplyr::left_join(location_count, by = "id") %>%
-#   dplyr::arrange(desc(n))
-#
-# ###map to show it
-# library(ggmap)
-# library(mapdata)
-# library(maps)
-# world <- ggplot2::map_data("world")
-#
-# world <- world %>%
-#   dplyr::filter(region != "Antarctica" & region != "Greenland")
-#
-# gg1 <- ggplot(data = world, aes(x = long, y = lat)) +
-#   geom_polygon(aes(group = group),
-#                fill = "#76b5c5") +
-#   theme_bw() +
-#   labs(x = "", y = "") +
-#   theme(
-#     legend.position = "none",
-#     panel.background = element_rect(fill = "transparent", color = NA),
-#     plot.background = element_rect(fill = "transparent", color = NA),
-#     axis.text = element_blank(),
-#     axis.ticks = element_blank()
-#   )
-#
-# gg1 <-
-#   gg1 +
-#   geom_point(
-#     data = all_locations,
-#     aes(x = x, y = y, size = n),
-#     shape = 16,
-#     color = "#873e23"
-#   ) +
-#   scale_size_continuous(range = c(1, 4))
-#
-# plot <-
-#   plotly::ggplotly(p = gg1) %>%
-#   plotly::config(
-#     toImageButtonOptions = list(
-#       format = "png",
-#       filename = "plot",
-#       height = 600,
-#       width = 800,
-#       background = "rgba(0,0,0,0)" # Transparent background
-#     )
-#   )
-#
+#' @title generate_collaborator_map
+#' @description Generate map of collaborators
+#' @author Xiaotao Shen
+#' \email{shenxt1990@@outlook.com}
+#' @param gs_user_id user google scholar ID
+#' @param force Force read webpage?
+#' @param interval If there is old data on the local machine,
+#' do you want to use it and the interval (day)?
+#' @param map_color color of map
+#' @param point_color color of point
+#' @importFrom magrittr %>%
+#' @importFrom rvest read_html html_node html_text html_text2 html_elements
+#' @importFrom stringr str_sort str_replace_all str_extract
+#' @importFrom dplyr mutate group_by slice_tail ungroup left_join desc
+#' @importFrom purrr walk
+#' @importFrom readr write_csv
+#' @importFrom tmaptools geocode_OSM
+#' @import ggplot2
+#' @return Profile.
+#' @export
+generate_collaborator_map <-
+  function(gs_user_id = "3TK9yz8AAAAJ",
+           force = FALSE,
+           interval = 7,
+           map_color = "#76b5c5",
+           point_color = "#873e23") {
+    publications <-
+      request_publications(user_id = gs_user_id,
+                           force = force,
+                           interval = interval)
+
+    all_affiliations <-
+      publications$publication_id %>%
+      lapply(function(id) {
+        cat(id, " ")
+        pmid <-
+          convert_gs_pub_id2pmid(
+            gs_user_id = gs_user_id,
+            gs_pub_id = id,
+            interval = interval,
+            force = force
+          )
+        if (is.na(pmid)) {
+          return(NA)
+        } else{
+          Sys.sleep(3)
+          result <-
+            request_pubmed_publication_info(pmid = pmid)
+          affiliations <-
+            result$affiliations
+          return(affiliations)
+        }
+      })
+
+    all_affiliations <-
+      unlist(all_affiliations)
+
+    all_affiliations <-
+      all_affiliations[!is.na(all_affiliations)]
+
+    all_affiliations <-
+      all_affiliations %>%
+      stringr::str_replace("^[0-9]{1,3}", "") %>%
+      stringr::str_replace("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b",
+                           "") %>%
+      stringr::str_replace("Electronic address", "") %>%
+      stringr::str_replace_all("\\.", "") %>%
+      stringr::str_replace_all("\\:", "") %>%
+      stringr::str_replace_all("\\;", ",") %>%
+      stringr::str_trim(side = "both")
+
+    all_affiliations <-
+      all_affiliations[all_affiliations != ""]
+
+    all_locations <-
+      all_affiliations %>%
+      lapply(function(x) {
+        # cat(x, "\n")
+        x <-
+          stringr::str_split(x, ",")[[1]] %>%
+          stringr::str_trim(side = "both")
+
+        if (length(x) > 3) {
+          x1 <- tail(x, 3) %>%
+            paste(collapse = ", ")
+        } else{
+          x1 <- x %>%
+            paste(collapse = ", ")
+        }
+
+        if (length(x) > 2) {
+          x2 <- tail(x, 2) %>%
+            paste(collapse = ", ")
+        } else{
+          x2 <- x %>%
+            paste(collapse = ", ")
+        }
+
+        result <-
+          tryCatch(
+            tmaptools::geocode_OSM(x1),
+            error = function(e) {
+              return(NULL)
+            }
+          )
+
+        if (is.null(result)) {
+          result <-
+            tryCatch(
+              tmaptools::geocode_OSM(x2),
+              error = function(e) {
+                return(NULL)
+              }
+            )
+        }
+
+        if (is.null(result)) {
+          return(NULL)
+        } else{
+          return(result$coords)
+        }
+      })
+
+    all_locations <-
+      all_locations %>%
+      do.call(rbind, .) %>%
+      as.data.frame()
+
+    all_locations$id <-
+      paste(all_locations$x,
+            all_locations$y, sep = "_")
+
+    location_count <-
+      all_locations %>%
+      dplyr::count(id)
+
+    all_locations <-
+      all_locations %>%
+      dplyr::distinct(id, .keep_all = TRUE) %>%
+      dplyr::left_join(location_count, by = "id") %>%
+      dplyr::arrange(dplyr::desc(n))
+
+    ###map to show it
+    # library(ggmap)
+    # library(mapdata)
+    # library(maps)
+    world <- ggplot2::map_data("world")
+
+    world <- world %>%
+      dplyr::filter(region != "Antarctica" & region != "Greenland")
+
+    gg1 <- ggplot(data = world, aes(x = long, y = lat)) +
+      geom_polygon(aes(group = group),
+                   fill = map_color) +
+      theme_bw() +
+      labs(x = "", y = "") +
+      theme(
+        legend.position = "none",
+        panel.background = element_rect(fill = "transparent", color = NA),
+        plot.background = element_rect(fill = "transparent", color = NA),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_blank()
+      )
+
+    gg1 <-
+      gg1 +
+      geom_point(
+        data = all_locations,
+        aes(x = x, y = y, size = n),
+        shape = 16,
+        color = point_color
+      ) +
+      scale_size_continuous(range = c(1, 4))
+
+    gg1
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # htmlwidgets::saveWidget(plot, "map.html")
