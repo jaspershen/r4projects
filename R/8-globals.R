@@ -20,6 +20,9 @@ utils::globalVariables(
     "lat",
     "group",
     "x",
-    "y"
+    "y",
+    "week",
+    "year",
+    "month"
   )
 )

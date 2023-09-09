@@ -7,6 +7,7 @@
 #' @importFrom crayon green blue col_align
 #' @importFrom crayon red black white style make_style num_colors
 #' @importFrom magrittr %>%
+#' @importFrom tidyr pivot_longer
 #' @export
 #' @return r4projects logo
 #' @examples

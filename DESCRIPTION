@@ -34,7 +34,8 @@ Imports:
     readr,
     xml2,
     rentrez,
-    tmaptools
+    tmaptools,
+    tidyr
 Suggests: 
     knitr,
     rmarkdown,
