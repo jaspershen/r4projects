@@ -1,3 +1,61 @@
+#' @title Add Large Files to .gitignore
+#' @description This function scans a specified folder for files larger than a given size limit
+#' and appends their paths to the `.gitignore` file to prevent them from being
+#' committed to a Git repository.
+#' @author Xiaotao Shen
+#' \email{shenxt1990@@outlook.com}
+#' @param path Character string specifying the path to the folder to be scanned.
+#' @param size_limit Numeric value indicating the size limit in megabytes (MB).
+#'        Files larger than this limit will be added to `.gitignore`. Default is 200 MB.
+#' @return Prints a message indicating the number of large files added to `.gitignore`,
+#'         or a message stating that no large files were found.
+#' @examples
+#' \dontrun{
+#' add_large_files2gitignore("path/to/your/folder", size_limit = 50)
+#' }
+#' @export
+
+add_large_files2gitignore <-
+  function(path,
+           size_limit = 200) {
+    # List all files in the folder recursively
+    all_files <-
+      list.files(path, recursive = TRUE, full.names = TRUE)
+
+    # Initialize a vector to store large files
+    large_files <- c()
+
+    # Loop through each file to check its size
+    for (file in all_files) {
+      file_size_MB <-
+        file.info(file)$size / (1024 * 1024)  # Convert size to MB
+      if (file_size_MB > size_limit) {
+        large_files <- c(large_files, file)
+      }
+    }
+
+    # If there are large files, append them to .gitignore
+    if (length(large_files) > 0) {
+      # Make the paths relative to the folder where .gitignore is located
+      large_files_relative <-
+        gsub(paste0(path, "/"), "", large_files)
+
+      # Open .gitignore file for appending
+      con <- file(".gitignore", "a")
+
+      # Write each large file path to .gitignore
+      for (file in large_files_relative) {
+        writeLines(paste0(file), con)
+      }
+
+      # Close the connection
+      close(con)
+
+      message(paste0("Added ", length(large_files), " large files to .gitignore"))
+    } else {
+      message("No large files found.")
+    }
+  }
 
 
 

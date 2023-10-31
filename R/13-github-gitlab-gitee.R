@@ -40,7 +40,7 @@ require_github_contribution_activity <-
       contribution_data[, -1]
 
     col_names <-
-      contribution_data[1,] %>%
+      contribution_data[1, ] %>%
       as.character() %>%
       stringr::str_split("\\\n") %>%
       lapply(function(x) {
@@ -49,7 +49,7 @@ require_github_contribution_activity <-
       unlist()
 
     contribution_data <-
-      contribution_data[-1, ]
+      contribution_data[-1,]
 
     contribution_value <-
       contribution_data %>%
@@ -373,7 +373,6 @@ require_package_info <-
     version <-
       x[stringr::str_detect(x, "Version:")] %>%
       stringr::str_replace("Version: ", "")
-
 
     list(
       package_name = package_name,
