@@ -1,21 +1,59 @@
-#' @title Add Large Files to .gitignore
-#' @description This function scans a specified folder for files larger than a given size limit
-#' and appends their paths to the `.gitignore` file to prevent them from being
-#' committed to a Git repository.
+#' @title install_fastgit
+#' @description install packages from fastgit. Credit to Shixiang Wang
 #' @author Xiaotao Shen
 #' \email{shenxt1990@@outlook.com}
-#' @param path Character string specifying the path to the folder to be scanned.
-#' @param size_limit Numeric value indicating the size limit in megabytes (MB).
-#'        Files larger than this limit will be added to `.gitignore`. Default is 200 MB.
-#' @return Prints a message indicating the number of large files added to `.gitignore`,
-#'         or a message stating that no large files were found.
-#' @examples
-#' \dontrun{
-#' add_large_files2gitignore("path/to/your/folder", size_limit = 50)
-#' }
+#' @param pkg pkg name from github, gitlab or gitee, "name/repo" format
+#' @param from gitlab, github or gitee.
+#' @param ... Other parameters for install_git
+#' @importFrom remotes install_git
+#' @return NULL
 #' @export
 
-add_large_files2gitignore <-
+install_fastgit <-
+  function(pkg,
+           from = c("gitee", "gitlab", "github"),
+           ...) {
+    from <- match.arg(from)
+
+    if (from == "gitee") {
+      if (!grepl("/", pkg)) {
+        stop("Invalid package name, should in 'name/repo' format.")
+      }
+      remotes::install_git(paste0("https://gitee.com/", pkg), ...)
+    } else {
+      if (any(grepl(":", pkg))) {
+        remotes::install_git(pkg, ...)
+      } else {
+        if (any(grepl("/", pkg))) {
+          tryCatch(
+            remotes::install_git(paste0("https://hub.fastgit.org/", pkg)),
+            error = function(e) {
+              message("Install error when use GitHub mirror, roll back to official GitHub.")
+              remotes::install_github(pkg)
+            }
+          )
+        }
+      }
+    }
+  }
+
+
+
+
+#' Add Large Files to .gitignore
+#'
+#' This function scans a specified folder for files larger than a given size limit
+#' and appends their paths to the '.gitignore' file to prevent them from being
+#' committed to a Git repository.
+#'
+#' @param path Character string specifying the path to the folder to be scanned.
+#' @param size_limit Numeric value indicating the size limit in megabytes (MB).
+#'        Files larger than this limit will be added to '.gitignore'. Default is 200 MB.
+#'
+#' @return A message indicating the number of large files added to '.gitignore',
+#'         or a message stating that no large files were found.
+#' @export
+ignore_large_files <-
   function(path,
            size_limit = 200) {
     # List all files in the folder recursively
@@ -54,46 +92,5 @@ add_large_files2gitignore <-
       message(paste0("Added ", length(large_files), " large files to .gitignore"))
     } else {
       message("No large files found.")
-    }
-  }
-
-
-
-#' @title install_fastgit
-#' @description install packages from fastgit. Credit to Shixiang Wang
-#' @author Xiaotao Shen
-#' \email{shenxt1990@@outlook.com}
-#' @param pkg pkg name from github, gitlab or gitee, "name/repo" format
-#' @param from gitlab, github or gitee.
-#' @param ... Other parameters for install_git
-#' @importFrom remotes install_git
-#' @return NULL
-#' @export
-
-install_fastgit <-
-  function(pkg,
-           from = c("gitee", "gitlab", "github"),
-           ...) {
-    from <- match.arg(from)
-
-    if (from == "gitee") {
-      if (!grepl("/", pkg)) {
-        stop("Invalid package name, should in 'name/repo' format.")
-      }
-      remotes::install_git(paste0("https://gitee.com/", pkg), ...)
-    } else {
-      if (any(grepl(":", pkg))) {
-        remotes::install_git(pkg, ...)
-      } else {
-        if (any(grepl("/", pkg))) {
-          tryCatch(
-            remotes::install_git(paste0("https://hub.fastgit.org/", pkg)),
-            error = function(e) {
-              message("Install error when use GitHub mirror, roll back to official GitHub.")
-              remotes::install_github(pkg)
-            }
-          )
-        }
-      }
     }
   }

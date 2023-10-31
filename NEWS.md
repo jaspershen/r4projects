@@ -4,4 +4,4 @@
 
 # r4projects 0.1.1
 
-* Add function add_large_files2gitignore
+* Add function ignore_large_files

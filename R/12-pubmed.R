@@ -1,17 +1,25 @@
-#' @title convert_gs_pub_id2pmid
-#' @description Convert google scholar publication ID to pubmed ID
-#' @author Xiaotao Shen
-#' \email{shenxt1990@@outlook.com}
-#' @param gs_user_id google scholar user ID
-#' @param gs_pub_id google scholar publication ID
-#' @param force Force read webpage?
-#' @param interval If there is old data on the local machine,
-#' do you want to use it and the interval (day)?
+#' Convert Google Scholar Publication ID to PubMed ID
+#'
+#' This function takes a Google Scholar user ID and a Google Scholar publication ID,
+#' retrieves the publication information, and then searches for the corresponding
+#' PubMed ID (PMID).
+#'
+#' @param gs_user_id Character string specifying the Google Scholar user ID. Default is "3TK9yz8AAAAJ".
+#' @param gs_pub_id Character string specifying the Google Scholar publication ID. Default is "0EnyYjriUFMC".
+#' @param force Logical. Whether to force the request for publication info. Default is FALSE.
+#' @param interval Numeric. Time interval in seconds to wait between requests. Default is 7.
 #' @importFrom magrittr %>%
 #' @importFrom stringr str_extract str_replace str_detect str_split
 #' @importFrom purrr map
 #' @importFrom rentrez entrez_search
-#' @return Information of publication
+#' @return A character string containing the PubMed ID (PMID) if found, or NA otherwise.
+#'         Warnings are issued if the PubMed ID or the publication is not found.
+#'
+#' @examples
+#' \dontrun{
+#' convert_gs_pub_id2pmid(gs_user_id = "some_user_id", gs_pub_id = "some_pub_id")
+#' }
+#'
 #' @export
 
 convert_gs_pub_id2pmid <-

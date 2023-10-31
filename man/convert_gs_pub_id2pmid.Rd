@@ -2,7 +2,7 @@
 % Please edit documentation in R/12-pubmed.R
 \name{convert_gs_pub_id2pmid}
 \alias{convert_gs_pub_id2pmid}
-\title{convert_gs_pub_id2pmid}
+\title{Convert Google Scholar Publication ID to PubMed ID}
 \usage{
 convert_gs_pub_id2pmid(
   gs_user_id = "3TK9yz8AAAAJ",
@@ -12,22 +12,26 @@ convert_gs_pub_id2pmid(
 )
 }
 \arguments{
-\item{gs_user_id}{google scholar user ID}
+\item{gs_user_id}{Character string specifying the Google Scholar user ID. Default is "3TK9yz8AAAAJ".}
 
-\item{gs_pub_id}{google scholar publication ID}
+\item{gs_pub_id}{Character string specifying the Google Scholar publication ID. Default is "0EnyYjriUFMC".}
 
-\item{force}{Force read webpage?}
+\item{force}{Logical. Whether to force the request for publication info. Default is FALSE.}
 
-\item{interval}{If there is old data on the local machine,
-do you want to use it and the interval (day)?}
+\item{interval}{Numeric. Time interval in seconds to wait between requests. Default is 7.}
 }
 \value{
-Information of publication
+A character string containing the PubMed ID (PMID) if found, or NA otherwise.
+        Warnings are issued if the PubMed ID or the publication is not found.
 }
 \description{
-Convert google scholar publication ID to pubmed ID
+This function takes a Google Scholar user ID and a Google Scholar publication ID,
+retrieves the publication information, and then searches for the corresponding
+PubMed ID (PMID).
 }
-\author{
-Xiaotao Shen
-\email{shenxt1990@outlook.com}
+\examples{
+\dontrun{
+convert_gs_pub_id2pmid(gs_user_id = "some_user_id", gs_pub_id = "some_pub_id")
+}
+
 }
