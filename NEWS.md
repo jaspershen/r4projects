@@ -5,3 +5,7 @@
 # r4projects 0.1.1
 
 * Add function ignore_large_files
+
+# r4projects 0.1.2
+
+* Add function color_palette
