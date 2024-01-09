@@ -1,8 +1,8 @@
 Package: r4projects
 Type: Package
 Title: R for bioinformatics project organization
-Version: 0.1.2
-Date: 2023-11-28
+Version: 0.1.3
+Date: 2024-01-08
 Author: c(
     person(given = "Xiaotao",
            family = "Shen",
@@ -35,7 +35,8 @@ Imports:
     xml2,
     rentrez,
     tmaptools,
-    tidyr
+    tidyr,
+    stringdist
 Suggests: 
     knitr,
     rmarkdown,
